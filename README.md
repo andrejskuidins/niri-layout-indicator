@@ -1,5 +1,9 @@
 # Niri Layout Indicator
 
+![screenshot](screenshot_01.png)
+![screenshot](screenshot_02.png)
+![screenshot](screenshot_03.png)
+
 Keyboard layout indicator and switcher for Noctalia Shell on niri.
 > Built for niri + Noctalia Shell on Wayland.
 
