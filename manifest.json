@@ -1,0 +1,29 @@
+{
+  "id": "niri-layout-indicator",
+  "name": "Niri Layout Indicator",
+  "version": "0.1.0",
+  "minNoctaliaVersion": "3.6.0",
+  "author": "Alnrog",
+  "license": "MIT",
+  "description": "Keyboard layout indicator and switcher for Noctalia Shell on niri.",
+  "entryPoints": {
+    "barWidget": "BarWidget.qml",
+    "settings": "Settings.qml"
+  },
+  "dependencies": {
+    "plugins": []
+  },
+  "metadata": {
+    "defaultSettings": {
+      "displayMode": "text",
+      "middleClickAction": "previous",
+      "pollIntervalMs": 750
+    },
+    "tags": [
+      "Niri",
+      "Keyboard",
+      "Layout",
+      "Wayland"
+    ]
+  }
+}
