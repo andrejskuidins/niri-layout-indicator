@@ -2,13 +2,18 @@
   "settings": {
     "title": "Niri Layout Indicator",
     "description": "Keyboard layout indicator and switcher for niri.",
+    "saved": "Settings saved",
+    "actions": "Actions",
+    "refresh-layouts": "Refresh layouts",
+    "refresh-message": "Layouts refreshed",
+    "reset-defaults": "Reset to defaults",
+    "reset-message": "Settings reset to defaults",
     "display": {
       "title": "Display mode",
       "description": "Choose what the bar widget shows.",
       "text": "Text: en, ru",
       "flag": "Flag: 🇺🇸, 🇷🇺"
     },
-    "keybind-command": "qs -c \"noctalia-shell\" ipc call plugin:keybind-cheatsheet toggle",
     "middle": {
       "title": "Middle click action",
       "description": "Choose what happens when you middle-click the widget.",
@@ -17,7 +22,9 @@
     },
     "update": {
       "title": "Update interval",
-      "description": "How often the widget checks the active keyboard layout."
+      "description": "How often the widget checks the active keyboard layout.",
+      "interval_label": "Interval (ms):",
+      "interval_hint": "200 – 30000"
     }
   },
   "menu": {

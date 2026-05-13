@@ -78,8 +78,9 @@ NIconButton {
     if (n.indexOf("korean") >= 0) return "ko"
     if (n.indexOf("chinese") >= 0) return "zh"
 
-    var first = (name || "??").replace(/\(.*/, "").trim().split(/\s+/)[0]
-    return first.substring(0, 2).toLowerCase()
+    // Fallback: extract first word and take first 2 characters
+    var first = n.replace(/\(.*/, "").trim().split(/\s+/)[0]
+    return first.substring(0, 2)
   }
 
   function flagForLayout(name) {
@@ -196,6 +197,20 @@ NIconButton {
   }
 
   function switchLayout(target) {
+    if (target === "next" || target === "prev") {
+      if (root.layouts.length === 0) {
+        Logger.w("NiriLayoutIndicator", "switchLayout: no layouts available")
+        return
+      }
+      for (var i = 0; i < root.layouts.length; i++) {
+        if (root.layouts[i].active) {
+          var dir = target === "next" ? 1 : -1
+          var pos = (i + dir + root.layouts.length) % root.layouts.length
+          target = root.layouts[pos].index
+          break
+        }
+      }
+    }
     switchProc.exec(["niri", "msg", "action", "switch-layout", target.toString()])
     refreshDelay.restart()
   }
