@@ -10,7 +10,7 @@ mkdir -p "$HOME/.config/noctalia/plugins"
 rm -rf "$PLUGIN_DST"
 cp -r "$PLUGIN_SRC" "$PLUGIN_DST"
 
-python - "$PLUGINS_JSON" "$PLUGIN_ID" <<'PY'
+python3 - "$PLUGINS_JSON" "$PLUGIN_ID" <<'PY'
 import json
 import sys
 from pathlib import Path
