@@ -344,9 +344,10 @@ Item {
             text: rootItem.pluginApi?.tr("settings.reset-defaults") || "Reset to defaults"
             icon: "rotate"
             onClicked: {
-              root.editDisplayMode = root.defaults.displayMode ?? "text";
-              root.editMiddleClickAction = root.defaults.middleClickAction ?? "previous";
-              root.editPollIntervalMs = root.defaults.pollIntervalMs ?? 750;
+              var defs = root.defaults;
+              root.editDisplayMode = defs.displayMode ?? "text";
+              root.editMiddleClickAction = defs.middleClickAction ?? "previous";
+              root.editPollIntervalMs = defs.pollIntervalMs ?? 750;
 
               displayTextRadio.checked = (root.editDisplayMode === "text");
               displayFlagRadio.checked = (root.editDisplayMode === "flag");
@@ -359,12 +360,7 @@ Item {
                 rootItem.pluginApi.pluginSettings.middleClickAction = root.editMiddleClickAction;
                 rootItem.pluginApi.pluginSettings.pollIntervalMs = root.editPollIntervalMs;
                 rootItem.pluginApi.saveSettings();
-
-                // Notify the bar widget instance
-                var mi = rootItem.pluginApi.mainInstance;
-                if (mi && typeof mi.onSettingsChanged === "function") {
-                  mi.onSettingsChanged();
-                }
+                rootItem.notifyBarWidget();
               }
 
               ToastService.showNotice(
@@ -382,25 +378,4 @@ Item {
     }
 
   }  // end ColumnLayout
-
-  // Notify the bar widget instance that settings have changed
-  function notifyBarWidget() {
-    var mainInstance = pluginApi?.mainInstance;
-    if (mainInstance && typeof mainInstance.onSettingsChanged === "function") {
-      mainInstance.onSettingsChanged();
-    }
-  }
-
-  // Save function on rootItem so the shell can call component.saveSettings()
-  function saveSettings() {
-    if (!pluginApi) return;
-    pluginApi.pluginSettings.displayMode = root.editDisplayMode;
-    pluginApi.pluginSettings.middleClickAction = root.editMiddleClickAction;
-    pluginApi.pluginSettings.pollIntervalMs = root.editPollIntervalMs;
-    pluginApi.saveSettings();
-    notifyBarWidget();
-    ToastService.showNotice(
-      pluginApi?.tr("settings.saved") || "Settings saved"
-    );
-  }
 }

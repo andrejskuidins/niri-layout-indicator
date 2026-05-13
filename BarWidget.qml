@@ -59,21 +59,27 @@ NIconButton {
   border.width: Style.capsuleBorderWidth
 
   function saveSettings() {
-    if (!pluginApi || !pluginApi.pluginSettings)
+    Logger.d("NiriLayoutIndicator", "BarWidget.saveSettings: displayMode=" + root.displayMode + " middleClickAction=" + root.middleClickAction + " pollIntervalMs=" + root.pollIntervalMs)
+    if (!pluginApi || !pluginApi.pluginSettings) {
+      Logger.w("NiriLayoutIndicator", "BarWidget.saveSettings: pluginApi or pluginSettings is null")
       return
+    }
 
     pluginApi.pluginSettings.displayMode = root.displayMode
     pluginApi.pluginSettings.middleClickAction = root.middleClickAction
     pluginApi.pluginSettings.pollIntervalMs = root.pollIntervalMs
     pluginApi.saveSettings()
+    Logger.d("NiriLayoutIndicator", "BarWidget.saveSettings: saved successfully")
   }
 
   // Called by the shell when settings change (e.g. from the settings page).
   // Re-read settings from pluginApi.pluginSettings and update local state.
   function onSettingsChanged() {
+    Logger.d("NiriLayoutIndicator", "BarWidget.onSettingsChanged: before displayMode=" + root.displayMode + " middleClickAction=" + root.middleClickAction)
     root.displayMode = root.getSetting("displayMode", "text")
     root.middleClickAction = root.getSetting("middleClickAction", "previous")
     root.pollIntervalMs = root.getSetting("pollIntervalMs", 750)
+    Logger.d("NiriLayoutIndicator", "BarWidget.onSettingsChanged: after displayMode=" + root.displayMode + " middleClickAction=" + root.middleClickAction)
     root.rebuildContextMenuModel()
   }
 
@@ -238,6 +244,7 @@ NIconButton {
   }
 
   function toggleDisplayMode() {
+    Logger.d("NiriLayoutIndicator", "BarWidget.toggleDisplayMode: " + root.displayMode + " -> " + (root.displayMode === "text" ? "flag" : "text"))
     root.displayMode = root.displayMode === "text" ? "flag" : "text"
     root.saveSettings()
     root.rebuildContextMenuModel()
@@ -354,10 +361,13 @@ NIconButton {
   }
 
   Component.onCompleted: {
-    // Read initial settings now that pluginApi should be injected
+    Logger.d("NiriLayoutIndicator", "BarWidget.onCompleted: pluginApi=" + (pluginApi ? "set" : "null") + " pluginSettings=" + JSON.stringify(pluginApi?.pluginSettings))
+
     root.displayMode = root.getSetting("displayMode", "text")
     root.middleClickAction = root.getSetting("middleClickAction", "previous")
     root.pollIntervalMs = root.getSetting("pollIntervalMs", 750)
+
+    Logger.d("NiriLayoutIndicator", "BarWidget.onCompleted: displayMode=" + root.displayMode + " middleClickAction=" + root.middleClickAction + " pollIntervalMs=" + root.pollIntervalMs)
 
     root.refresh()
     root.rebuildContextMenuModel()
