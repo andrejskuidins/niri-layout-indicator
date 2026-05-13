@@ -35,7 +35,60 @@ Item {
     }
   }
 
+  // Helper: read setting from pluginSettings, falling back to manifest defaults
+  function getSetting(key, fallback) {
+    var ps = pluginApi?.pluginSettings
+    if (ps && ps[key] !== undefined)
+      return ps[key]
+    var defs = pluginApi?.manifest?.metadata?.defaultSettings
+    if (defs && defs[key] !== undefined)
+      return defs[key]
+    return fallback
+  }
+
+  // Notify the bar widget instance that settings have changed
+  function notifyBarWidget() {
+    var mainInstance = pluginApi?.mainInstance;
+    if (mainInstance && typeof mainInstance.onSettingsChanged === "function") {
+      mainInstance.onSettingsChanged();
+    }
+  }
+
+  // Save function on rootItem so the shell can call component.saveSettings()
+  function saveSettings() {
+    Logger.d("NiriLayoutIndicator", "Settings.saveSettings called: displayMode=" + root.editDisplayMode + " middleClickAction=" + root.editMiddleClickAction + " pollIntervalMs=" + root.editPollIntervalMs)
+    if (!pluginApi) {
+      Logger.w("NiriLayoutIndicator", "Settings.saveSettings: pluginApi is null")
+      return;
+    }
+    pluginApi.pluginSettings.displayMode = root.editDisplayMode;
+    pluginApi.pluginSettings.middleClickAction = root.editMiddleClickAction;
+    pluginApi.pluginSettings.pollIntervalMs = root.editPollIntervalMs;
+    pluginApi.saveSettings();
+    notifyBarWidget();
+    Logger.d("NiriLayoutIndicator", "Settings.saveSettings: saved and notified bar widget")
+    ToastService.showNotice(
+      pluginApi?.tr("settings.saved") || "Settings saved"
+    );
+  }
+
   Component.onCompleted: {
+    // Now pluginApi should be injected — initialize edit properties
+    Logger.d("NiriLayoutIndicator", "Settings.onCompleted: pluginApi=" + (pluginApi ? "set" : "null") + " pluginSettings=" + JSON.stringify(pluginApi?.pluginSettings))
+
+    root.editDisplayMode = rootItem.getSetting("displayMode", "text")
+    root.editMiddleClickAction = rootItem.getSetting("middleClickAction", "previous")
+    root.editPollIntervalMs = rootItem.getSetting("pollIntervalMs", 750)
+
+    Logger.d("NiriLayoutIndicator", "Settings.onCompleted: editDisplayMode=" + root.editDisplayMode + " editMiddleClickAction=" + root.editMiddleClickAction + " editPollIntervalMs=" + root.editPollIntervalMs)
+
+    // Sync the UI controls to the now-initialized edit properties
+    displayTextRadio.checked = (root.editDisplayMode === "text")
+    displayFlagRadio.checked = (root.editDisplayMode === "flag")
+    middlePrevRadio.checked = (root.editMiddleClickAction === "previous")
+    middleToggleRadio.checked = (root.editMiddleClickAction === "toggle-mode")
+    pollInput.text = root.editPollIntervalMs.toString()
+
     resizeTimer.start();
   }
 
@@ -49,14 +102,13 @@ Item {
     width: parent.width
     spacing: Style.marginM
 
-    // Configuration — read from saved settings, fall back to manifest defaults
-    property var cfg: rootItem.pluginApi?.pluginSettings || ({})
+    // Defaults from manifest
     property var defaults: rootItem.pluginApi?.manifest?.metadata?.defaultSettings || ({})
 
-    // Edit-copy properties — initialized from saved settings, saved only via saveSettings()
-    property string editDisplayMode: cfg.displayMode ?? defaults.displayMode ?? "text"
-    property string editMiddleClickAction: cfg.middleClickAction ?? defaults.middleClickAction ?? "previous"
-    property int editPollIntervalMs: cfg.pollIntervalMs ?? defaults.pollIntervalMs ?? 750
+    // Edit-copy properties — initialized in Component.onCompleted, saved via saveSettings()
+    property string editDisplayMode: "text"
+    property string editMiddleClickAction: "previous"
+    property int editPollIntervalMs: 750
 
     // Header
     NText {
@@ -109,18 +161,24 @@ Item {
           NRadioButton {
             id: displayTextRadio
             text: rootItem.pluginApi?.tr("settings.display.text")
-            checked: root.editDisplayMode === "text"
+            checked: false  // set by Component.onCompleted
             onToggled: function(checked) {
-              if (checked) root.editDisplayMode = "text";
+              if (checked) {
+                Logger.d("NiriLayoutIndicator", "Settings: displayMode -> text")
+                root.editDisplayMode = "text";
+              }
             }
           }
 
           NRadioButton {
             id: displayFlagRadio
             text: rootItem.pluginApi?.tr("settings.display.flag")
-            checked: root.editDisplayMode === "flag"
+            checked: false  // set by Component.onCompleted
             onToggled: function(checked) {
-              if (checked) root.editDisplayMode = "flag";
+              if (checked) {
+                Logger.d("NiriLayoutIndicator", "Settings: displayMode -> flag")
+                root.editDisplayMode = "flag";
+              }
             }
           }
         }
@@ -161,18 +219,24 @@ Item {
           NRadioButton {
             id: middlePrevRadio
             text: rootItem.pluginApi?.tr("settings.middle.previous")
-            checked: root.editMiddleClickAction === "previous"
+            checked: false  // set by Component.onCompleted
             onToggled: function(checked) {
-              if (checked) root.editMiddleClickAction = "previous";
+              if (checked) {
+                Logger.d("NiriLayoutIndicator", "Settings: middleClickAction -> previous")
+                root.editMiddleClickAction = "previous";
+              }
             }
           }
 
           NRadioButton {
             id: middleToggleRadio
             text: rootItem.pluginApi?.tr("settings.middle.toggle_display")
-            checked: root.editMiddleClickAction === "toggle-mode"
+            checked: false  // set by Component.onCompleted
             onToggled: function(checked) {
-              if (checked) root.editMiddleClickAction = "toggle-mode";
+              if (checked) {
+                Logger.d("NiriLayoutIndicator", "Settings: middleClickAction -> toggle-mode")
+                root.editMiddleClickAction = "toggle-mode";
+              }
             }
           }
         }
@@ -220,7 +284,7 @@ Item {
             id: pollInput
             Layout.preferredWidth: 100 * Style.uiScaleRatio
             Layout.preferredHeight: Style.baseWidgetSize
-            text: root.editPollIntervalMs.toString()
+            text: "750"  // set by Component.onCompleted
 
             onTextChanged: {
               var val = parseInt(text);

@@ -3,16 +3,11 @@
   "name": "Niri Layout Indicator",
   "version": "0.1.0",
   "minNoctaliaVersion": "3.6.0",
-  "author": "Alnrog",
+  "author": "AndrejsKuidins",
   "license": "MIT",
-  "repository": "https://github.com/noctalia-dev/noctalia-plugins",
+  "repository": "",
   "description": "Keyboard layout indicator and switcher for Noctalia Shell on niri.",
-  "tags": [
-    "Bar",
-    "Niri",
-    "Utility",
-    "Keyboard"
-  ],
+  "tags": ["Bar", "Niri", "Utility", "Keyboard"],
   "entryPoints": {
     "barWidget": "BarWidget.qml",
     "settings": "Settings.qml"
