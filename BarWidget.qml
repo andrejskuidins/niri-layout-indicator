@@ -15,9 +15,22 @@ NIconButton {
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
 
-  property string displayMode: pluginApi?.pluginSettings?.displayMode || "text" // "text" | "flag"
-  property string middleClickAction: pluginApi?.pluginSettings?.middleClickAction || "previous"
-  property int pollIntervalMs: pluginApi?.pluginSettings?.pollIntervalMs || 750
+  // Helper: read setting from pluginSettings, falling back to manifest defaults
+  function getSetting(key, fallback) {
+    var ps = pluginApi?.pluginSettings
+    if (ps && ps[key] !== undefined)
+      return ps[key]
+    var defs = pluginApi?.manifest?.metadata?.defaultSettings
+    if (defs && defs[key] !== undefined)
+      return defs[key]
+    return fallback
+  }
+
+  // These are bound to getSetting() so they react to pluginApi becoming available.
+  // We use Qt.binding in Component.onCompleted so they track changes properly.
+  property string displayMode: "text"
+  property string middleClickAction: "previous"
+  property int pollIntervalMs: 750
 
   property int currentIndex: -1
   property string currentName: "Unknown"
@@ -53,6 +66,15 @@ NIconButton {
     pluginApi.pluginSettings.middleClickAction = root.middleClickAction
     pluginApi.pluginSettings.pollIntervalMs = root.pollIntervalMs
     pluginApi.saveSettings()
+  }
+
+  // Called by the shell when settings change (e.g. from the settings page).
+  // Re-read settings from pluginApi.pluginSettings and update local state.
+  function onSettingsChanged() {
+    root.displayMode = root.getSetting("displayMode", "text")
+    root.middleClickAction = root.getSetting("middleClickAction", "previous")
+    root.pollIntervalMs = root.getSetting("pollIntervalMs", 750)
+    root.rebuildContextMenuModel()
   }
 
   function codeForLayout(name) {
@@ -332,6 +354,11 @@ NIconButton {
   }
 
   Component.onCompleted: {
+    // Read initial settings now that pluginApi should be injected
+    root.displayMode = root.getSetting("displayMode", "text")
+    root.middleClickAction = root.getSetting("middleClickAction", "previous")
+    root.pollIntervalMs = root.getSetting("pollIntervalMs", 750)
+
     root.refresh()
     root.rebuildContextMenuModel()
     Logger.i("NiriLayoutIndicator", "Loaded")
