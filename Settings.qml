@@ -10,18 +10,18 @@ ColumnLayout {
 
   // Local state — follows docs pattern exactly
   property string editDisplayMode:
-    pluginApi?.pluginSettings?.displayMode ||
-    pluginApi?.manifest?.metadata?.defaultSettings?.displayMode ||
+    pluginApi?.pluginSettings?.displayMode ??
+    pluginApi?.manifest?.metadata?.defaultSettings?.displayMode ??
     "text"
 
   property string editMiddleClickAction:
-    pluginApi?.pluginSettings?.middleClickAction ||
-    pluginApi?.manifest?.metadata?.defaultSettings?.middleClickAction ||
+    pluginApi?.pluginSettings?.middleClickAction ??
+    pluginApi?.manifest?.metadata?.defaultSettings?.middleClickAction ??
     "previous"
 
   property int editPollIntervalMs:
-    pluginApi?.pluginSettings?.pollIntervalMs ||
-    pluginApi?.manifest?.metadata?.defaultSettings?.pollIntervalMs ||
+    pluginApi?.pluginSettings?.pollIntervalMs ??
+    pluginApi?.manifest?.metadata?.defaultSettings?.pollIntervalMs ??
     750
 
   spacing: Style.marginM
@@ -29,13 +29,17 @@ ColumnLayout {
   // Required: Save function called by the settings dialog
   function saveSettings() {
     Logger.i("NiriLayoutIndicator", "saveSettings called: " + root.editDisplayMode)
-    if (!pluginApi) {
-      Logger.w("NiriLayoutIndicator", "saveSettings: pluginApi is null")
+    if (!pluginApi || !pluginApi.pluginSettings) {
+      Logger.w("NiriLayoutIndicator", "saveSettings: pluginApi or pluginSettings is null")
       return
     }
-    pluginApi.pluginSettings.displayMode = root.editDisplayMode
-    pluginApi.pluginSettings.middleClickAction = root.editMiddleClickAction
-    pluginApi.pluginSettings.pollIntervalMs = root.editPollIntervalMs
+
+    var newSettings = {
+      displayMode: root.editDisplayMode,
+      middleClickAction: root.editMiddleClickAction,
+      pollIntervalMs: root.editPollIntervalMs
+    }
+    pluginApi.pluginSettings = newSettings
     pluginApi.saveSettings()
 
     var mi = pluginApi.mainInstance
